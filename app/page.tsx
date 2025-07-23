@@ -1,44 +1,72 @@
-"use client";
-import { useState } from "react";
-import { Card } from "../components/ui/Card";
-import { Input } from "../components/ui/Input";
-import { Label } from "../components/ui/Label";
+import React, { useState } from "react";
 
 export default function Home() {
   const [entryPrice, setEntryPrice] = useState(45);
   const [currentPrice, setCurrentPrice] = useState(43.7);
-  const [capitalProvided, setCapitalProvided] = useState(15500);
-  const [feesCollected, setFeesCollected] = useState(781);
-  const [lpValueNow, setLpValueNow] = useState(14250);
+  const [capital, setCapital] = useState(15500);
+  const [fees, setFees] = useState(781);
+  const [lpValue, setLpValue] = useState(14250);
 
-  const hodlValue = capitalProvided * ((currentPrice + entryPrice) / (2 * entryPrice));
-  const ilPercent = ((lpValueNow / hodlValue) - 1) * 100;
-  const netPnL = lpValueNow + feesCollected - hodlValue;
-  const netPnLPercent = (netPnL / capitalProvided) * 100;
-  const status = netPnL >= 0 ? "✅ PROFIT" : "❌ LOSS";
+  // Calculations (same as before)
+  const valueIfHeld = (capital / entryPrice) * currentPrice;
+  const impermanentLossPercent =
+    ((lpValue - valueIfHeld) / valueIfHeld) * 100;
+  const netProfitLoss = lpValue + fees - capital;
+  const status = netProfitLoss >= 0 ? "✅ PROFIT" : "❌ LOSS";
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold">LP Farming Calculator</h1>
-        <Card>
-          <div className="grid grid-cols-2 gap-4 p-6">
-            <div><Label>HYPE Entry Price</Label><Input type="number" value={entryPrice} onChange={e => setEntryPrice(parseFloat(e.target.value))} /></div>
-            <div><Label>Current HYPE Price</Label><Input type="number" value={currentPrice} onChange={e => setCurrentPrice(parseFloat(e.target.value))} /></div>
-            <div><Label>Capital Provided (USD)</Label><Input type="number" value={capitalProvided} onChange={e => setCapitalProvided(parseFloat(e.target.value))} /></div>
-            <div><Label>Fees Collected (USD)</Label><Input type="number" value={feesCollected} onChange={e => setFeesCollected(parseFloat(e.target.value))} /></div>
-            <div><Label>Current LP Value (USD)</Label><Input type="number" value={lpValueNow} onChange={e => setLpValueNow(parseFloat(e.target.value))} /></div>
-          </div>
-        </Card>
-        <Card>
-          <div className="p-6 space-y-2">
-            <p><strong>Value If Held (HODL):</strong> ${hodlValue.toFixed(2)}</p>
-            <p><strong>Impermanent Loss:</strong> {ilPercent.toFixed(2)}%</p>
-            <p><strong>Net PnL:</strong> ${netPnL.toFixed(2)} ({netPnLPercent.toFixed(2)}%)</p>
-            <p><strong>Status:</strong> {status}</p>
-          </div>
-        </Card>
+    <main className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-50 flex items-center justify-center p-6">
+      <div className="bg-white shadow-lg rounded-xl max-w-md w-full p-8 space-y-6">
+        <h1 className="text-3xl font-bold text-indigo-700 text-center">
+          LP Farming Calculator
+        </h1>
+
+        <div className="space-y-4">
+          {[
+            { label: "Entry Price (HYPE)", value: entryPrice, setter: setEntryPrice },
+            { label: "Current Price (HYPE)", value: currentPrice, setter: setCurrentPrice },
+            { label: "Capital Provided (USD)", value: capital, setter: setCapital },
+            { label: "Fees Collected (USD)", value: fees, setter: setFees },
+            { label: "Current LP Value (USD)", value: lpValue, setter: setLpValue },
+          ].map(({ label, value, setter }) => (
+            <div key={label}>
+              <label className="block text-gray-700 font-semibold mb-1">{label}</label>
+              <input
+                type="number"
+                value={value}
+                onChange={(e) => setter(parseFloat(e.target.value) || 0)}
+                className="w-full border border-indigo-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-indigo-50 rounded-lg p-4 text-center space-y-2 shadow-inner">
+          <p className="text-lg font-semibold text-indigo-700">
+            Value If Held: <span className="font-mono">${valueIfHeld.toFixed(2)}</span>
+          </p>
+          <p className="text-lg font-semibold text-indigo-700">
+            Impermanent Loss:{" "}
+            <span
+              className={`font-mono ${
+                impermanentLossPercent < 0 ? "text-red-600" : "text-green-600"
+              }`}
+            >
+              {impermanentLossPercent.toFixed(2)}%
+            </span>
+          </p>
+          <p className="text-lg font-semibold text-indigo-700">
+            Net Profit/Loss:{" "}
+            <span className={`font-mono ${netProfitLoss >= 0 ? "text-green-700" : "text-red-700"}`}>
+              ${netProfitLoss.toFixed(2)}
+            </span>
+          </p>
+          <p className={`text-xl font-bold ${netProfitLoss >= 0 ? "text-green-800" : "text-red-800"}`}>
+            {status}
+          </p>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
+
